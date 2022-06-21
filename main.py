@@ -15,7 +15,7 @@ with open('ps3500-pt-testset.csv', encoding="utf-8-sig") as csvfile:
     for row in reader:
         master_list.append(row)
 
-
+# THIS ONE STILL NEEDS A LOT OF WORK
 # clean length field to just produce number of pages
 def clean_length(book_list):
     # if 'pages' in field value process
