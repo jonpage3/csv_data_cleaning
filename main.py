@@ -158,10 +158,6 @@ def clean_date(book_list):
                         except ValueError:
                             item['clean_date'] = DEFAULT_DATE
 
-        # set a default min length to help with visualization
-        if item['clean_length'] < 30:
-            item['clean_length'] = DEFAULT_MIN_LENGTH
-
 
 # write the list into a csv file
 def write_csv(booklist):
@@ -269,6 +265,10 @@ def new_clean_length(booklist):
                     item['clean_length'] = int(max(pnum))
                 else:
                     item['clean_length'] = DEFAULT_LENGTH
+
+        # set a default min length to help with visualization
+        if item['clean_length'] < 30:
+            item['clean_length'] = DEFAULT_MIN_LENGTH
 
 
 # run the program
