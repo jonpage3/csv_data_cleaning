@@ -1,21 +1,25 @@
 
+import csv
+import re
+
 # Default values
 # height: 20
 # length: 100
 # date: 1950
+# min_length: 30
 DEFAULT_HEIGHT = 20
 DEFAULT_LENGTH = 100
 DEFAULT_DATE = 1950
-import csv
-import re
+DEFAULT_MIN_LENGTH = 30
 
 master_list = []
-with open('ps3500-pt-testset.csv', encoding="utf-8-sig") as csvfile:
+with open('ps3500-pt-testset.csv', encoding="utf-8-sig",errors='ignore') as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
         master_list.append(row)
 
-# THIS ONE STILL NEEDS A LOT OF WORK
+
+# not used
 # clean length field to just produce number of pages
 def clean_length(book_list):
     # if 'pages' in field value process
@@ -68,9 +72,6 @@ def clean_height(book_list):
                 item['clean_height'] = max(numlist)
             else:
                 item['clean_height'] = DEFAULT_HEIGHT
-
-
-
 
 
 # clean date to produce year data xxxx
@@ -157,6 +158,11 @@ def clean_date(book_list):
                         except ValueError:
                             item['clean_date'] = DEFAULT_DATE
 
+        # set a default min length to help with visualization
+        if item['clean_length'] < 30:
+            item['clean_length'] = DEFAULT_MIN_LENGTH
+
+
 # write the list into a csv file
 def write_csv(booklist):
     with open('clean_data.csv', 'w', newline='') as csvfile:
@@ -170,10 +176,105 @@ def write_csv(booklist):
             writer.writerow(elem)
 
 
+def new_clean_length(booklist):
+    for item in booklist:
+        if len(item['length']) == 0:
+            item['clean_length'] = DEFAULT_LENGTH
 
+        # have to do special things for those items with volume
+        elif len(item['length']) > 0 and 'vol' in item['length']:
+            # print(item['length'])
+            if 'pages' in item['length'] and re.search("[0-9] vol", item['length']):
+
+                # to handle specific weirdness
+                s = re.split(r'[^a-zA-Z0-9]', item['length'])
+                # count how many times pages appears in description
+                pages_count = [1 for p in s if "pages" in p]
+                if len(pages_count) > 1:
+                    n = 0
+                    page_total = 0
+                    while n < len(s):
+                        if 'pages' in s[n] or 'unnumbered' in s[n]:
+                            try:
+                                page_total += int(s[n-1])
+                            except ValueError:
+                                pass
+                        n += 1
+                    pnum = []
+                    for i in s:
+                        try:
+                            pnum.append(int(i))
+                        except ValueError:
+                            pass
+                    item['clean_length'] = int(page_total/min(pnum))
+                else:
+                    pnum = []
+                    for i in s:
+                        try:
+                            pnum.append(int(i))
+                        except ValueError:
+                            pass
+
+                    item['clean_length'] = int(max(pnum)/min(pnum))
+
+            # volume isn't clearly indicated but page numbers are
+            elif 'pages' in item['length'] and not re.search("[0-9] vol", item['length']):
+                plist = re.split(r"[\b\W\b]+", item['length'])
+                pnum = []
+                for i in plist:
+                    try:
+                        pnum.append(int(i))
+                    except ValueError:
+                        pass
+                item['clean_length'] = max(pnum)
+
+            else:
+                # no clear indication of page length
+                item['clean_length'] = DEFAULT_LENGTH
+
+        else:
+            # print(item['length'])
+            s = re.split(r'[^a-zA-Z0-9]', item['length'])
+            pages_count = [1 for p in s if "pages" in p]
+            if len(pages_count) > 1:
+                n = 0
+                page_total = 0
+                while n < len(s):
+                    if 'pages' in s[n] or 'unnumbered' in s[n]:
+                        try:
+                            page_total += int(s[n - 1])
+                        except ValueError:
+                            pass
+                    n += 1
+                pnum = []
+                for i in s:
+                    try:
+                        pnum.append(int(i))
+                    except ValueError:
+                        pass
+
+                if len(pnum) > 1:
+                    item['clean_length'] = page_total
+                # this works fine
+                else:
+                    item['clean_length'] = pnum[0]
+            else:
+                pnum = []
+                for i in s:
+                    try:
+                        pnum.append(int(i))
+                    except ValueError:
+                        pass
+                if len(pnum) > 0:
+                    item['clean_length'] = int(max(pnum))
+                else:
+                    item['clean_length'] = DEFAULT_LENGTH
+
+
+# run the program
 clean_date(master_list)
 clean_height(master_list)
-clean_length(master_list)
+new_clean_length(master_list)
 write_csv(master_list)
 
 
