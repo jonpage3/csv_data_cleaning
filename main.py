@@ -1,6 +1,7 @@
 
 import csv
 import re
+import random
 
 # Default values
 # height: 20
@@ -163,7 +164,7 @@ def clean_date(book_list):
 def write_csv(booklist):
     with open('clean_data.csv', 'w', newline='') as csvfile:
         fieldnames = ['callnum', 'vol', 'checkouts', 'title', 'title2', 'author','pub_location','publisher','date',
-                      'length', 'height', 'contents', 'subjects','subjects2','clean_date','clean_height','clean_length']
+                      'length', 'height', 'contents', 'subjects','subjects2','clean_date','clean_height','clean_length','color','id']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         # use this to iterate through list of dictionaries
@@ -270,11 +271,27 @@ def new_clean_length(booklist):
         if item['clean_length'] < 30:
             item['clean_length'] = DEFAULT_MIN_LENGTH
 
+# extremely basic generation of hex colors
+def add_color(book_list):
+    for item in book_list:
+        color = "#" + ''.join([random.choice('ABCDEF0123456789') for i in range(6)])
+        item['color'] = color
+
+
+# basic functionality, should be adjusted after getting Sierra item records
+def add_id(book_list):
+    acc = 1
+    for item in book_list:
+        item['id'] = acc
+        acc += 1
+
 
 # run the program
 clean_date(master_list)
 clean_height(master_list)
 new_clean_length(master_list)
+add_color(master_list)
+add_id(master_list)
 write_csv(master_list)
 
 
