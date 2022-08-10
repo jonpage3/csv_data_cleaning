@@ -2,6 +2,7 @@
 import csv
 import re
 import random
+import add_random_color
 
 # Default values
 # height: 20
@@ -273,9 +274,14 @@ def new_clean_length(booklist):
 
 # extremely basic generation of hex colors
 def add_color(book_list):
+    golden_ratio_conjugate = 0.618033988749895
+
     for item in book_list:
-        color = "#" + ''.join([random.choice('ABCDEF0123456789') for i in range(6)])
-        item['color'] = color
+        h = float(f'{random.random():.17f}')
+        h += golden_ratio_conjugate
+        h %= 1
+        # color = "#" + ''.join([random.choice('ABCDEF0123456789') for i in range(6)])
+        item['color'] = add_random_color.hslToRgb(h, 0.5, 0.40)
 
 
 # basic functionality, should be adjusted after getting Sierra item records
