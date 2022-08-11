@@ -165,7 +165,7 @@ def clean_date(book_list):
 def write_csv(booklist):
     with open('clean_data.csv', 'w', newline='') as csvfile:
         fieldnames = ['callnum', 'vol', 'checkouts', 'title', 'title2', 'author','pub_location','publisher','date',
-                      'length', 'height', 'contents', 'subjects','subjects2','clean_date','clean_height','clean_length','color','id']
+                      'length', 'height', 'contents', 'subjects','subjects2','clean_date','clean_height','clean_length','color','id','clean_author']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         # use this to iterate through list of dictionaries
@@ -292,12 +292,27 @@ def add_id(book_list):
         acc += 1
 
 
+# add a clean author field to help with author searching
+def clean_author(book_list):
+    for item in book_list:
+        author = item['author']
+        author = re.sub(r'http\S+', '', author)
+
+        author = author.replace(' author.', '')
+        # print(author)
+        author = re.sub("[^A-Za-z]", "", author)
+        author = author.lower()
+        item['clean_author'] = author
+        # print(author)
+
+
 # run the program
 clean_date(master_list)
 clean_height(master_list)
 new_clean_length(master_list)
 add_color(master_list)
 add_id(master_list)
+clean_author(master_list)
 write_csv(master_list)
 
 
