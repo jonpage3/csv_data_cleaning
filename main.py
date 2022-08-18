@@ -3,6 +3,7 @@ import csv
 import re
 import random
 import add_random_color
+from nltk.corpus import stopwords
 
 # Default values
 # height: 20
@@ -165,7 +166,7 @@ def clean_date(book_list):
 def write_csv(booklist):
     with open('clean_data.csv', 'w', newline='') as csvfile:
         fieldnames = ['callnum', 'vol', 'checkouts', 'title', 'title2', 'author','pub_location','publisher','date',
-                      'length', 'height', 'contents', 'subjects','subjects2','clean_date','clean_height','clean_length','color','id','clean_author']
+                      'length', 'height', 'contents', 'subjects','subjects2','clean_date','clean_height','clean_length','color','id','clean_author','keyword_string']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         # use this to iterate through list of dictionaries
@@ -305,6 +306,17 @@ def clean_author(book_list):
         item['clean_author'] = author
         # print(author)
 
+# add a string that can be used for keyword search
+def create_keyword_string(book_list):
+    stopwords_pattern = re.compile(r'\b(' + r'|'.join(stopwords.words()) + r')\b\s*')
+    for item in book_list:
+        keyword_string = item['title'] + item['title2'] + item['clean_author'] + item['pub_location'] + item['publisher'] + item['contents'] + item['subjects'] + item['subjects2']
+        keyword_string = re.sub(r'http\S+', '', keyword_string)
+        keyword_string = stopwords_pattern.sub('',keyword_string)
+        keyword_string = re.sub("[^A-Za-z]", "", keyword_string)
+        keyword_string = keyword_string.lower()
+        item['keyword_string'] = keyword_string
+
 
 # run the program
 clean_date(master_list)
@@ -313,6 +325,7 @@ new_clean_length(master_list)
 add_color(master_list)
 add_id(master_list)
 clean_author(master_list)
+create_keyword_string(master_list)
 write_csv(master_list)
 
 
