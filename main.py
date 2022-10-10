@@ -75,6 +75,8 @@ def clean_height(book_list):
                 item['clean_height'] = max(numlist)
             else:
                 item['clean_height'] = DEFAULT_HEIGHT
+        if item['clean_height'] > 50:
+            item['clean_height'] = DEFAULT_HEIGHT
 
 
 # clean date to produce year data xxxx
@@ -166,7 +168,7 @@ def clean_date(book_list):
 def write_csv(booklist):
     with open('clean_data.csv', 'w', newline='') as csvfile:
         fieldnames = ['callnum', 'vol', 'checkouts', 'title', 'title2', 'author','pub_location','publisher','date',
-                      'length', 'height', 'contents', 'subjects','subjects2','clean_date','clean_height','clean_length','color','id','clean_author','keyword_string']
+                      'length', 'height', 'contents', 'subjects','subjects2','clean_date','clean_height','clean_length','color','id','clean_author','keyword_string','callnum_string','font_family','clean_title']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         # use this to iterate through list of dictionaries
@@ -317,8 +319,46 @@ def create_keyword_string(book_list):
         keyword_string = keyword_string.lower()
         item['keyword_string'] = keyword_string
 
+def create_callnum_string(book_list):
+    for item in book_list:
+        callnum = item['callnum']
+        callnum = re.sub("[^A-Za-z0-9]", "", callnum)
+        callnum = callnum.lower()
+        item['callnum_string'] = callnum
+
+def add_font_family(book_list):
+    for item in book_list:
+        date = item['clean_date']
+        if date in range(0,1850):
+            item['font_family'] = 'Baskervville'
+        elif date in range(1850,1875):
+            item['font_family'] = 'Libre Caslon Text'
+        elif date in range(1875,1900):
+            item['font_family'] = 'Space Grotesk'
+        elif date in range(1900,1925):
+            item['font_family'] = 'Goudy Bookletter 1911'
+        elif date in range(1925,1950):
+            item['font_family'] = 'Times New Roman'
+        elif date in range(1950,1975):
+            item['font_family'] = 'Helvetica'
+        elif date in range(1975,2000):
+            item['font_family'] = 'Lucida Console'
+        elif date in range(2000,2025):
+            item['font_family'] = 'MuseoModerno'
+        else:
+            item['font_family'] = "sans-serif"
+
+def clean_title(book_list):
+    for item in book_list:
+        title = item['title']
+        if title[-1:].isalnum():
+            item['clean_title'] = title
+        else:
+            item['clean_title'] = title[:-1]
+
 
 # run the program
+
 clean_date(master_list)
 clean_height(master_list)
 new_clean_length(master_list)
@@ -326,7 +366,12 @@ add_color(master_list)
 add_id(master_list)
 clean_author(master_list)
 create_keyword_string(master_list)
+create_callnum_string(master_list)
+add_font_family(master_list)
+clean_title(master_list)
 write_csv(master_list)
+
+
 
 
 
